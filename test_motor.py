@@ -16,13 +16,17 @@ print "Turning motor on"
 GPIO.output(Motor1A,GPIO.HIGH)
 GPIO.output(Motor1B,GPIO.LOW)
 p = GPIO.PWM(Motor1E,500)
-speed = sys.argv[1]
-if not speed:
+
+if not sys.argv[1]:
 	p.start(50)
 else:
-	p.start(float(speed))
+	p.start(float(sys.argv[1]))
 
-sleep(2)
+raw_input()
+
+print "stopping motor"
+
 p.stop()
+
 GPIO.cleanup()
 
