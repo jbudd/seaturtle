@@ -18,16 +18,16 @@ def motor_left_set_speed(speed):
 	left = GPIO.PWM(Motor1E,500)
 	left.start(float(speed))
 
-def motor_left_stop():
-	print "stopping motor"
+	if(speed == 0):
+		print "stopping motor"
 
-	left.stop()
+		left.stop()
 
-	GPIO.cleanup()
+		GPIO.cleanup()
 
 motor_left_set_speed(100)
 
 sleep(2)
 
-motor_left_stop()
+motor_left_set_speed(0)
 
