@@ -1,11 +1,11 @@
 import picamera
 import subprocess
 
-camera = picamera.PiCamera()
+#camera = picamera.PiCamera()
 
-camera.capture('image2.png')
+#camera.capture('image2.png')
 
-proc = subprocess.Popen('../build/bin/apriltags_demo' + ' image2.png',
+proc = subprocess.Popen('../apriltags/build/bin/apriltags_demo',
 	shell=True,
 	stdout = subprocess.PIPE,
 	stderr = subprocess.PIPE,
