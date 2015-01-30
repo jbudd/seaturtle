@@ -35,7 +35,7 @@ args = parser.parse_args()
 sensor = ms5803.Sensor(args.device, args.address)
 while True:
     pressure, temp = sensor.read()
-    print('{}: {}bar {}C'.format(datetime.now(), pressure / 10000, temp / 100))
+    print('{}: {}bar {}C'.format(datetime.now(), pressure / 10, temp / 100))
 
     time.sleep(0.5)
 
