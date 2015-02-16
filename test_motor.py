@@ -5,9 +5,9 @@ import sys
 
 GPIO.setmode(GPIO.BOARD)
 
-Motor1A = 16
-Motor1B = 18
-Motor1E = 22
+Motor1A = 29 
+Motor1B = 31
+Motor1E = 33
 
 GPIO.setup(Motor1A,GPIO.OUT)
 GPIO.setup(Motor1B,GPIO.OUT)
