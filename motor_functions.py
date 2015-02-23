@@ -22,32 +22,42 @@ def motor_set_speed(motor,speed):
 	GPIO.setup(Motor1A,GPIO.OUT)
 	GPIO.setup(Motor1B,GPIO.OUT)
 	GPIO.setup(Motor1E,GPIO.OUT)
-
-	print "Turning motor on"
+	motor = GPIO.PWM(Motor1E,500)
+	motor.start(0)
+	sleep(2)
+#	print"PWM 50"
+#	motor.ChangeDutyCycle(50)
+#	sleep(2)
+#	print "Turning motor on"
 	if(speed > 0):
+		print("Starting motor")
 		GPIO.output(Motor1A,GPIO.HIGH)
 		GPIO.output(Motor1B,GPIO.LOW)
-		motor = GPIO.PWM(Motor1E,500)
-		motor.start(float(speed))
+	#	motor = GPIO.PWM(Motor1E,500)
+		print Motor1E
+		motor.ChangeDutyCycle(float(speed))
+		sleep(0.1)
 	elif(speed < 0):
 		GPIO.output(Motor1A,GPIO.LOW)
 		GPIO.output(Motor1B,GPIO.HIGH)
-		motor = GPIO.PWM(Motor1E,500)
-		motor.start(float(speed))
+	#	motor = GPIO.PWM(Motor1E,500)
+		motor.ChangeDutyCycle(float(abs(speed)))
 	elif(speed == 0):
 		print "stopping motor"
-
-		left.stop()
+	#	motor = GPIO.PWM(Motor1E,500)
+		motor.stop()
 
 		GPIO.cleanup()
 
-def move_forward(speed):
+motor_set_speed("L",55)
+sleep(2)
+def move(speed):
 	motor_set_speed("L",speed)
 	motor_set_speed("R",speed)
 
 def rotate_pods(degrees):
 	GPIO.setmode(GPIO.BOARD)
-	GPIO.setup(35,GPIO.INPUT)
+	GPIO.setup(35,GPIO.IN)
 
     #start the motor
 	if(degrees > 0):

@@ -1,5 +1,10 @@
 from motor_functions import *
-
-rotate_pods(36)
+from time import sleep
+motor_set_speed("G",65)
+sleep(2)
+motor_set_speed("G",-65)
+sleep(2)
+motor_set_speed("G",0)
+#rotate_pods(36)
 
 
