@@ -47,7 +47,8 @@ def move_forward(speed):
 
 def rotate_pods(degrees):
 	GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(35,GPIO.INPUT)
+	GPIO.setup(35,GPIO.INPUT)
+
     #start the motor
 	if(degrees > 0):
 		motor_set_speed("G",60)
