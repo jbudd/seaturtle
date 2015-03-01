@@ -1,5 +1,6 @@
 import RPi.GPIO as GPIO
-from time import sleep
+import time 
+time_stamp = time.time()
 
 GPIO.setmode(GPIO.BOARD)
 
@@ -18,16 +19,24 @@ motor.start(0)
 GPIO.output(Motor1A,GPIO.HIGH)
 GPIO.output(Motor1B,GPIO.LOW)
 
-degrees = 72
+degrees = 360
 
 
 count_degrees = int(abs(degrees)/18)
 	#use interrupts to count number of encoder pulses
 count = 0
 while(count < count_degrees):
+	
 	motor.ChangeDutyCycle(60)
-	GPIO.wait_for_edge(35,GPIO.RISING)
-	count += 1
+	GPIO.wait_for_edge(35,GPIO.FALLING)
+	global time_stamp
+	time_now = time.time()
+	if(time_now - time_stamp) >= 0.13:
+		print "increasing count count "
+		count += 1
+	time_stamp = time_now
+
+
 
 motor.stop()
 GPIO.cleanup()

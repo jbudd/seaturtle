@@ -1,82 +1,115 @@
-import RPi.GPIO as GPIO
-from time import sleep
+# import RPi.GPIO as GPIO
+# import time
 
-def motor_set_speed(motor,speed):
-	GPIO.setmode(GPIO.BOARD)
-	if(motor == "R"):
-		Motor1A = 19
-		Motor1B = 23
-		Motor1E = 21
-	elif(motor == "L"):
-		Motor1A = 13
-		Motor1B = 15
-		Motor1E = 11
-	elif(motor == "G"):
-		Motor1A = 31
-		Motor1B = 33
-		Motor1E = 29
-	else:
-		print "Not a valid motor"
-		return
-	
-	GPIO.setup(Motor1A,GPIO.OUT)
-	GPIO.setup(Motor1B,GPIO.OUT)
-	GPIO.setup(Motor1E,GPIO.OUT)
-	motor = GPIO.PWM(Motor1E,500)
-	motor.start(0)
+# time_stamp = time.time()
 
+
+#pin definitions
+# RA = 19
+# RB = 23
+# RE = 21
+# LA = 13
+# LB = 15
+# LE = 11
+# GA = 31
+# GB = 33
+# GE = 29
+# ENCODER = 35
+
+# #board definitons
+# GPIO.setmode(GPIO.BOARD)
+# GPIO.setup(RA,GPIO.OUT)
+# GPIO.setup(RB,GPIO.OUT)
+# GPIO.setup(RE,GPIO.OUT)
+
+# GPIO.setup(LA,GPIO.OUT)
+# GPIO.setup(LB,GPIO.OUT)
+# GPIO.setup(LE,GPIO.OUT)
+
+# GPIO.setup(GA,GPIO.OUT)
+# GPIO.setup(GB,GPIO.OUT)
+# GPIO.setup(GE,GPIO.OUT)
+
+# GPIO.setup(ENCODER,GPIO.IN)
+
+# #setup PWM channels
+# motor_right_PWM = GPIO.PWM(RE,500)
+# motor_right_PWM.start(0)
+
+# motor_left_PWM = GPIO.PWM(LE,500)
+# motor_left_PWM.start(0)
+
+# motor_gear_PWM = GPIO.PWM(GE,500)
+# motor_gear_PWM.start(0)
+
+def set_speed_right(speed):
+	global motor_right_PWM
+	speed = float(speed)
 	if(speed > 0):
-		print("Starting motor")
-		GPIO.output(Motor1A,GPIO.HIGH)
-		GPIO.output(Motor1B,GPIO.LOW)
-		print Motor1E
-		motor.ChangeDutyCycle(float(speed))
-		sleep(0.1)
+		#print("Starting motor")
+		GPIO.output(RA,GPIO.HIGH)
+		GPIO.output(RB,GPIO.LOW)
+		motor_right_PWM.ChangeDutyCycle(speed)
 	elif(speed < 0):
-		GPIO.output(Motor1A,GPIO.LOW)
-		GPIO.output(Motor1B,GPIO.HIGH)
-		motor.ChangeDutyCycle(float(abs(speed)))
+		GPIO.output(RA,GPIO.LOW)
+		GPIO.output(RB,GPIO.HIGH)
+		motor_right_PWM.ChangeDutyCycle(abs(speed))
+	elif(speed == 0):
+		global motor_right_PWM
+		print "stopping motor"
+		motor_gear_PWM.ChangeDutyCycle(0)
+
+def set_speed_left(speed):
+	global motor_left_PWM
+	speed = float(speed)
+	if(speed > 0):
+		#print("Starting motor")
+		GPIO.output(LA,GPIO.HIGH)
+		GPIO.output(LB,GPIO.LOW)
+		motor_left_PWM.ChangeDutyCycle(speed)
+	elif(speed < 0):
+		GPIO.output(LA,GPIO.LOW)
+		GPIO.output(LB,GPIO.HIGH)
+		motor_left_PWM.ChangeDutyCycle(abs(speed))
 	elif(speed == 0):
 		print "stopping motor"
-		motor.stop()
+		motor_gear_PWM.ChangeDutyCycle(0)
 
-		GPIO.cleanup()
-
+def set_speed_gear(speed):
+	global motor_gear_PWM
+	speed = float(speed)
+	if(speed > 0):
+		#print("Starting motor")
+		GPIO.output(GA,GPIO.HIGH)
+		GPIO.output(GB,GPIO.LOW)
+		motor_gear_PWM.ChangeDutyCycle(speed)
+	elif(speed < 0):
+		GPIO.output(GA,GPIO.LOW)
+		GPIO.output(GB,GPIO.HIGH)
+		motor_gear_PWM.ChangeDutyCycle(abs(speed))
+	elif(speed == 0):
+		print "stopping motor"
+		motor_gear_PWM.ChangeDutyCycle(0)
 
 def move(speed):
-	motor_set_speed("L",speed)
-	motor_set_speed("R",speed)
+	set_speed_right(speed)
+	set_speed_left(speed)
 
 def rotate_pods(degrees):
-	A = 31
-	B = 33		
-	E = 29
-	Encoder = 35
-
-	GPIO.setup(A,GPIO.OUT)
-	GPIO.setup(B,GPIO.OUT)
-	GPIO.setup(E,GPIO.OUT)
-	GPIO.setup(Encoder,GPIO.IN)
-	motor = GPIO.PWM(Motor1E,500)
-	motor.start(0)
-
-	if(degrees >= 0):
-		GPIO.output(A,GPIO.HIGH)
-		GPIO.output(B,GPIO.LOW)
-	elif(degrees < 0):
-		GPIO.output(A,GPIO.HIGH)
-		GPIO.output(B,GPIO.LOW)
-
 	count_degrees = int(abs(degrees)/18)
 		#use interrupts to count number of encoder pulses
 	count = 0
 	while(count < count_degrees):
-		motor.ChangeDutyCycle(60)
-		GPIO.wait_for_edge(35,GPIO.RISING)
-		count += 1
+		set_speed_gear(65)
+		GPIO.wait_for_edge(ENCODER,GPIO.FALLING)
+		global time_stamp
+		time_now = time.time()
+		if(time_now - time_stamp) >= 0.13:
+			print "increasing count count "
+			count += 1
+		time_stamp = time_now
+	set_speed_gear(0)
 
-	motor.stop()
-	GPIO.cleanup()
 
 	
 
