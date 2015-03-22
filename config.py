@@ -3,6 +3,9 @@ import RPi.GPIO as GPIO
 import time
 import sys
 from motor_functions import *
+from Adafruit_LSM303 import *
+import ms5803
+# from L3GD20 import L3GD20
 
 #global time
 time_stamp = time.time()
@@ -55,3 +58,35 @@ motor_left_PWM.start(0)
 
 motor_gear_PWM = GPIO.PWM(GE,500)
 motor_gear_PWM.start(0)
+
+# #sensor set up
+# pressure_sensor = ms5803.Sensor('/dev/i2c-1',0x76)
+
+# # Communication object
+# # gyro = L3GD20(busId = 1, slaveAddr = 0x6b, ifLog = False, ifWriteBlock=False)
+
+# # Preconfiguration
+# gyro.Set_PowerMode("Normal")
+# gyro.Set_FullScale_Value("250dps")
+# gyro.Set_AxisX_Enabled(True)
+# gyro.Set_AxisY_Enabled(True)
+# gyro.Set_AxisZ_Enabled(True)
+
+# # Print current configuration
+# gyro.Init()
+# gyro.Calibrate()
+
+# # # Calculate angle
+# # dt = 0.02
+# # x = 0
+# # y = 0
+# # z = 0
+# # while 1==1:
+# # 	time.sleep(dt)
+# # 	dxyz = s.Get_CalOut_Value()
+# # 	x += dxyz[0]*dt;
+# # 	y += dxyz[1]*dt;
+# # 	z += dxyz[2]*dt;
+# # 	print("{:7.2f} {:7.2f} {:7.2f}".format(x, y, z))
+
+
