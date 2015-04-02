@@ -10,7 +10,7 @@ x = 0
 y = 0
 z = 0
 
-run_time = 60
+run_time = 120
 start_time = time.time()
 
 camera = picamera.PiCamera()

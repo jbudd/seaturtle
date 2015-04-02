@@ -2,15 +2,15 @@ import picamera
 import time
 import sys
 
-filename = 'video_'+ str(time.time())+'.h264'
+filename = 'low-res.h264'
 
-record_time = int(sys.argv[1])
+record_time = 30
 
 print "starting video"
 
 try:
 	with picamera.PiCamera() as camera:
-	    camera.resolution = (640, 480)
+	    camera.resolution = (400, 400)
 	    camera.start_recording(filename)
 	    camera.wait_recording(record_time)
 	    camera.stop_recording()

@@ -131,7 +131,6 @@ def move(speed):
 
 
 def move_interval(interval):
-	# multiply right by negative gyre value and left by gyro value
 	p = 0.5
 	z = 0
 	dt = 0.2
@@ -142,13 +141,8 @@ def move_interval(interval):
 		dxyz = s.Get_CalOut_Value()
 		z += dxyz[2]*dt
 		print z
-		if (z) >= 30:
-			z = 30
-		elif z <= -30:
-			z = -30
-		print z
-		set_speed_left(85- p*z)
-		set_speed_right(85 + p*z)
+		set_speed_left(100)
+		set_speed_right(100)
 		data_cache.append([
 			lsm.read(),
 			dxyz,
@@ -189,40 +183,8 @@ def rotate_pods(degrees):
 		global time_stamp
 		time_now = time.time()
 		if(time_now - time_stamp) >= 0.13:
-			print "increasing count count "
 			count += 1
 		time_stamp = time_now
-	set_speed_gear(0)
-
-def step_pods(direction):
-	direction = float(direction)
-	speed = 0
-	if(direction > 0):
-		speed = 55
-	elif(direction < 0):
-		speed = -55
-	else:
-		print "not a degree"
-		
-	count = 0
-	run_time = time.time()
-	while(count < 1 and time.time()-run_time < 3):
-		time_start = time.time()
-		set_speed_gear(speed)
-		GPIO.wait_for_edge(ENCODER,GPIO.FALLING)
-		print "fell"
-		time_now = time.time()
-		delta = time_now-time_start
-		print delta
-		if(time_now-time_start)> 0.4:
-			count += 1
-	print "found stop"
-	set_speed_gear(0)
-
-
-def free_rotate_pods(speed):
-	set_speed_gear(speed)
-	raw_input()
 	set_speed_gear(0)
 
 
@@ -249,61 +211,41 @@ def turn_degree(degree):
 
 	move(0)
 
-def turn_degree_PID(degree):
+
+def turn_degree_bang(degree):
 	z = 0
 	dt = 0.2
 	speed = 65
-	p = .2
 	threshold = 1
+	count = 0
+	global data_cache
 	degree = int(degree)
 	to_go = degree
-
-	global data_cache
-	while abs(to_go) > int(threshold):
-		print z , to_go
-		to_go = degree - z
-		if to_go < 0:
-			turn_right(min(speed + p*abs(to_go), 85))
-		elif to_go >= 0:
-			turn_left(min(speed + p*abs(to_go), 85))
-		dxyz = s.Get_CalOut_Value()
-		z += dxyz[2]*dt
-		data_cache.append([
-			lsm.read(),
-			dxyz,
-			sensor.read(),
-			time.time()
-			])
-		time.sleep(dt)
-	print "done turning"
-
-	move(0)
-
-
-def move_straight_old(interval):
-	p = 0.5
-	z = 0
-	dt = 0.2
-	finish = 0
-	start = 0
-
+	dxyz = s.Get_CalOut_Value()
+	z += dxyz[2]*(dt)
 	start_time = time.time()
-
-	while (time.time()-start_time) < interval:
+	stopping = False
+	while abs(z) < abs(degree):
 		dxyz = s.Get_CalOut_Value()
-		z += dxyz[2]*(dt + (finish - start))
-		start = 0
-		finish = 0
+		z += dxyz[2]*(dt)
+
+		
 		print z
-		if abs(z) >= 10:
-			print "correcting"
-			start = time.time()
-			turn_degree(-z * p)
-			finish = time.time()
-			print 'done correcting'
-		print z
-		set_speed_left(85)
-		set_speed_right(85)
+		if abs(z) < .74*abs(degree) and not stopping:
+			if degree < 0:
+				turn_right(speed)
+			elif degree >= 0:
+				turn_left(speed)
+		else:
+			stopping = True
+			if count < 1:
+				move(0)
+				count += 1
+			else:
+				if degree < 0:
+					turn_left(speed)
+				elif degree >= 0:
+					turn_right(speed)
 		data_cache.append([
 			lsm.read(),
 			dxyz,
@@ -311,10 +253,25 @@ def move_straight_old(interval):
 			time.time()
 			])
 		time.sleep(dt)
-
 	move(0)
+	start_time = time.time()
+	while time.time()-start_time < 2:
+		dxyz = s.Get_CalOut_Value()
+		z += dxyz[2]*(dt)
+		print "bonus"
+		print z
+		data_cache.append([
+			lsm.read(),
+			dxyz,
+			sensor.read(),
+			time.time()
+			])
+		time.sleep(dt)
+	print "done"
 
-def move_straight(interval):
+
+
+def move_straight_P(interval):
 	z = 0
 	dt = 0.2
 	p = 50
@@ -357,7 +314,47 @@ def write_data(filename):
 
 
 
-	
+def move_straight_PID(interval):
+	z = 0
+	dt = 0.2
+	p = 50
+	d = 10
+	i = 10
+	global data_cache
+	z_values = [0]
+
+	speed_right = 85
+	speed_left = 100
+
+	start_time = time.time()
+	while (time.time() - start_time) < interval:
+		dxyz = s.Get_CalOut_Value()
+		z += dxyz[2]*(dt)
+		z_values.append(z)
+		# print z_values[len(z_values)-2]
+		deriv = (z - float(z_values[len(z_values)-2]))/dt
+		intergrate = sum(z_values)
+		print z
+		if z > 0:
+			speed_r = max(speed_right - (p*z + d*deriv + i*intergrate), 65)
+			set_speed_right(min(speed_r, 100))
+			set_speed_left(speed_left)
+		elif z < 0:
+			speed_r = max(speed_right + (p*z + d*deriv + i*intergrate), 65)
+			set_speed_right(min(speed_r, 100))
+			speed = min(speed_left - (p*z + d*deriv + i*intergrate),100)
+			set_speed_left(max(speed,65))
+		else:
+			set_speed_right(speed_right)
+			set_speed_left(speed_left)
+		data_cache.append([
+			lsm.read(),
+			dxyz,
+			sensor.read(),
+			time.time()
+			])
+		time.sleep(dt)
+	move(0)	
 
 
 
